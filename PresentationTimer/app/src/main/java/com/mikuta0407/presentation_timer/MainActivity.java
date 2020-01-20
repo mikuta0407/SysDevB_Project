@@ -122,78 +122,76 @@ public class MainActivity extends AppCompatActivity {
 
 		/* 回転時状態復元 */
 		// savedInstanceStateがnullでないときは、Activityが再作成されたと判断、状態を復元
-			if (savedInstanceState!=null) {
+		if (savedInstanceState!=null) {
+			Log.i("デバッグ", "状態復元作業に入ります。");
+			recovered = true;
 
-				Log.i("デバッグ", "状態復元作業に入ります。");
-				recovered = true;
+			// まず動作状態を復元
+			run = savedInstanceState.getBoolean("runstatus");
+			finished = savedInstanceState.getBoolean("finishedstatus");
+			paused = savedInstanceState.getBoolean("pausedstatus");
+			mode = savedInstanceState.getInt("modestatus");
+			alerm = savedInstanceState.getBoolean("alermstatus");
+				alermSwitch.setChecked(alerm);
+			rang = savedInstanceState.getBoolean("rangstatus");
 
-				// まず動作状態を復元
-				run = savedInstanceState.getBoolean("runstatus");
-				finished = savedInstanceState.getBoolean("finishedstatus");
-				paused = savedInstanceState.getBoolean("pausedstatus");
-				mode = savedInstanceState.getInt("modestatus");
-				alerm = savedInstanceState.getBoolean("alermstatus");
-					alermSwitch.setChecked(alerm);
-				rang = savedInstanceState.getBoolean("rangstatus");
+			//数値系
+			ptime = savedInstanceState.getLong("ptimestatus");
+			qtime = savedInstanceState.getLong("qtimestatus");
+			leftTime = savedInstanceState.getLong("leftTimestatus");
+			flashTime = savedInstanceState.getLong("flashTimestatus");
 
-				//数値系
-				ptime = savedInstanceState.getLong("ptimestatus");
-				qtime = savedInstanceState.getLong("qtimestatus");
-				leftTime = savedInstanceState.getLong("leftTimestatus");
-				flashTime = savedInstanceState.getLong("flashTimestatus");
+			//UI系
 
-				//UI系
-
-				//色復元
-				if (mode == 1){
-					start_pause.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.tcu)));
-					timeProgressBar.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.tcu)));
-				} else if (mode == 2 || mode == 3) {
-					start_pause.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.tokyu)));
-					timeProgressBar.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.tokyu)));
-				}
-
-
-				//状態別復元
-				if (run) { // 動作中だったら
-					start_pause.setImageDrawable(getResources().getDrawable(R.drawable.ic_pause)); //一時停止ボタンに変更.
-
-					//タイマーか点滅か
-					if (mode == 1 || mode == 2) {
-						startTimer(); //タイマー続行
-					} else if (mode == 3){
-						flash();
-					}
-
-					//ラジオボタンの無効化
-					radioEnabledFalse();
-
-				} else {   // 動いてなかったら
-					start_pause.setImageDrawable(getResources().getDrawable(R.drawable.ic_play)); //再生ボタンに変更
-
-					if (paused) { //一時停止だった場合
-						//数字復元
-						updateCountDownText(); //一時停止時に回転した場合の文字復元
-					}
-
-					if (finished) { //停止中だった場合
-						recovered = false;
-						pastText.setText("00:00.0"); //除算の余りの関係で00:00.1になるので
-
-						//停止時の文字復元
-						//if (ptime == 600000) {
-						if (ptime == 20000) { //デモ用
-							//timerText.setText("10:00.0");
-							timerText.setText("00:20.0"); //デモ用
-						} else if (ptime == 1200000) {
-							timerText.setText("20:00.0");
-						} else if (ptime == 1800000) {
-							timerText.setText("30:00.0");
-						}
-					}
-				}
-
+			//色復元
+			if (mode == 1){
+				start_pause.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.tcu)));
+				timeProgressBar.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.tcu)));
+			} else if (mode == 2 || mode == 3) {
+				start_pause.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.tokyu)));
+				timeProgressBar.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.tokyu)));
 			}
+
+
+			//状態別復元
+			if (run) { // 動作中だったら
+				start_pause.setImageDrawable(getResources().getDrawable(R.drawable.ic_pause)); //一時停止ボタンに変更.
+
+				//タイマーか点滅か
+				if (mode == 1 || mode == 2) {
+					startTimer(); //タイマー続行
+				} else if (mode == 3){
+					flash();
+				}
+
+				//ラジオボタンの無効化
+				radioEnabledFalse();
+
+			} else {   // 動いてなかったら
+				start_pause.setImageDrawable(getResources().getDrawable(R.drawable.ic_play)); //再生ボタンに変更
+
+				if (paused) { //一時停止だった場合
+					//数字復元
+					updateCountDownText(); //一時停止時に回転した場合の文字復元
+				}
+
+				if (finished) { //停止中だった場合
+					recovered = false;
+					pastText.setText("00:00.0"); //除算の余りの関係で00:00.1になるので
+
+					//停止時の文字復元
+					//if (ptime == 600000) {
+					if (ptime == 20000) { //デモ用
+						//timerText.setText("10:00.0");
+						timerText.setText("00:20.0"); //デモ用
+					} else if (ptime == 1200000) {
+						timerText.setText("20:00.0");
+					} else if (ptime == 1800000) {
+						timerText.setText("30:00.0");
+					}
+				}
+			}
+
 
 			// ラジオボタン
 			// 発表時間
