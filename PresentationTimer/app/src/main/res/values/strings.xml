@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">PresentationTimer</string>
+
+    <string name="disp_time">10:00.0</string>
+    <string name="past_time">00:00.0</string>
+    <string name="cancel">キャンセル</string>
+    <string name="aleam">アラーム音</string>
+
+    <string name="present_time">発表時間設定</string>
+    <string name="question_time">質問時間設定</string>
+
+    <string name="ptime10">10分</string>
+    <string name="ptime20">20分</string>
+    <string name="ptime30">30分</string>
+
+    <string name="qtime5">5分</string>
+    <string name="qtime10">10分</string>
+</resources>
