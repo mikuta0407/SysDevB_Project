@@ -34,10 +34,11 @@ public class MainActivity extends AppCompatActivity {
 	boolean finished = true; //一時停止状態か、終了/キャンセルで止まったのかを記録。
 	boolean paused = false; //一時停止状態の記録
 	int mode = 1; //1: 発表 2: 質問 3: 点滅用
-	boolean rotated = false; //回転したのかどうかの記録。回転後の再開用
 	boolean flashmode = true;   //点滅の反転。本当はflashpartsに書くべきなのだが、回転対策のためここに記載。
 	boolean alerm = true;
 	boolean rang = false;
+
+	boolean recovered = false; // 再生成かどうかの判定
 
 	private TextView timerText; //数字表示部のTextView
 	private TextView pastText; //経過時間のTextView
@@ -58,7 +59,8 @@ public class MainActivity extends AppCompatActivity {
 	private int qtimeEndSound;
 
 
-	public long ptime = 20000; //発表時間設定を記録 //ptime = 600000; //一度も動作させたことがないときにActivityが再生成されるとptimeが何もなくて虚無になるので
+	//public long ptime = 20000; //発表時間設定を記録 //ptime = 600000; //一度も動作させたことがないときにActivityが再生成されるとptimeが何もなくて虚無になるので
+	public long ptime;
 	public long qtime; //質問時間設定を記録
 	private long leftTime; //残り時間を記録
 	private long flashTime; //点滅用(回転対策にここに記載)
@@ -66,7 +68,6 @@ public class MainActivity extends AppCompatActivity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		ptime = 20000;
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 
@@ -121,43 +122,77 @@ public class MainActivity extends AppCompatActivity {
 
 		/* 回転時状態復元 */
 		// savedInstanceStateがnullでないときは、Activityが再作成されたと判断、状態を復元
-		if (savedInstanceState!=null) {
-			// まず動作状態を復元
-			run = savedInstanceState.getBoolean("runstatus");
-			finished = savedInstanceState.getBoolean("finishedstatus");
-			paused = savedInstanceState.getBoolean("pausedstatus");
-			mode = savedInstanceState.getInt("modestatus");
-			rotated = savedInstanceState.getBoolean("rotatedstatus");
-			alerm = savedInstanceState.getBoolean("alermstatus");
-				alermSwitch.setChecked(alerm);
-			rang = savedInstanceState.getBoolean("rangstatus");
+			if (savedInstanceState!=null) {
 
-			//数値系
-			ptime = savedInstanceState.getLong("ptimestatus");
-			qtime = savedInstanceState.getLong("qtimestatus");
-			leftTime = savedInstanceState.getLong("leftTimestatus");
-			flashTime = savedInstanceState.getLong("flashTimestatus");
+				Log.i("デバッグ", "状態復元作業に入ります。");
+				recovered = true;
 
-			//UI系
-			// スタート・ストップボタンの画像状態を復元
-			if (run) { // 動作中なら
-				start_pause.setImageDrawable(getResources().getDrawable(R.drawable.ic_pause)); //一時停止ボタンに変更.
-				if (mode == 1 || mode == 2) {
-					startTimer(); //タイマー続行
-				} else if (mode == 3){
-					flash();
+				// まず動作状態を復元
+				run = savedInstanceState.getBoolean("runstatus");
+				finished = savedInstanceState.getBoolean("finishedstatus");
+				paused = savedInstanceState.getBoolean("pausedstatus");
+				mode = savedInstanceState.getInt("modestatus");
+				alerm = savedInstanceState.getBoolean("alermstatus");
+					alermSwitch.setChecked(alerm);
+				rang = savedInstanceState.getBoolean("rangstatus");
+
+				//数値系
+				ptime = savedInstanceState.getLong("ptimestatus");
+				qtime = savedInstanceState.getLong("qtimestatus");
+				leftTime = savedInstanceState.getLong("leftTimestatus");
+				flashTime = savedInstanceState.getLong("flashTimestatus");
+
+				//UI系
+
+				//色復元
+				if (mode == 1){
+					start_pause.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.tcu)));
+					timeProgressBar.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.tcu)));
+				} else if (mode == 2 || mode == 3) {
+					start_pause.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.tokyu)));
+					timeProgressBar.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.tokyu)));
 				}
-				radioEnabledFalse();
-			} else {   // 動いてなかったら
-				start_pause.setImageDrawable(getResources().getDrawable(R.drawable.ic_play)); //再生ボタンに変更
-			}
 
-			if (mode == 1){
-				start_pause.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.tcu)));
-				timeProgressBar.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.tcu)));
-			} else if (mode == 2 || mode == 3) {
-				start_pause.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.tokyu)));
-				timeProgressBar.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.tokyu)));
+
+				//状態別復元
+				if (run) { // 動作中だったら
+					start_pause.setImageDrawable(getResources().getDrawable(R.drawable.ic_pause)); //一時停止ボタンに変更.
+
+					//タイマーか点滅か
+					if (mode == 1 || mode == 2) {
+						startTimer(); //タイマー続行
+					} else if (mode == 3){
+						flash();
+					}
+
+					//ラジオボタンの無効化
+					radioEnabledFalse();
+
+				} else {   // 動いてなかったら
+					start_pause.setImageDrawable(getResources().getDrawable(R.drawable.ic_play)); //再生ボタンに変更
+
+					if (paused) { //一時停止だった場合
+						//数字復元
+						updateCountDownText(); //一時停止時に回転した場合の文字復元
+					}
+
+					if (finished) { //停止中だった場合
+						recovered = false;
+						pastText.setText("00:00.0"); //除算の余りの関係で00:00.1になるので
+
+						//停止時の文字復元
+						//if (ptime == 600000) {
+						if (ptime == 20000) { //デモ用
+							//timerText.setText("10:00.0");
+							timerText.setText("00:20.0"); //デモ用
+						} else if (ptime == 1200000) {
+							timerText.setText("20:00.0");
+						} else if (ptime == 1800000) {
+							timerText.setText("30:00.0");
+						}
+					}
+				}
+
 			}
 
 			// ラジオボタン
@@ -181,8 +216,6 @@ public class MainActivity extends AppCompatActivity {
 
 
 		// 以下メイン処理
-		resetTimer();
-
 		alerm = alermSwitch.isChecked();
 
 		// スタート・ストップボタンが押されたら
@@ -248,19 +281,26 @@ public class MainActivity extends AppCompatActivity {
 
 	private void startTimer() {  // タイマー実行
 
+		Log.i("デバッグ", "startTimerを叩きました。startTimer内でのptimeは "+ ptime);
+		Log.i("デバッグ", "startTimerを叩きました。startTimer内でのmodeは "+ mode);
 		run = true;
 		if (paused == true){ //一時停止復帰
 			paused = false;
 			Log.i("デバッグ", "一時停止から復帰しましたわよ");
-		} else if (rotated){
-			rotated = false;
+		} else if (recovered){
+			recovered = false;
+			Log.i("デバッグ", "startTimerは回転修正モードで起動しました");
 		} else { // ノーマル起動
+			Log.i("デバッグ", "startTimerはノーマルモードで起動しました");
 			if (mode == 1) {
 				leftTime = ptime;
+				Log.i("デバッグ", "leftTimeに値を代入しました。ptimeは"+ ptime +"、leftTimeは" + leftTime);
 			} else if (mode == 2) {
 				leftTime = qtime;
 			}
 		}
+
+		Log.i("デバッグ", "countDownTimerを起動します。leftTimeは "+ leftTime);
 
 		countDown = new CountDownTimer(leftTime,10) {
 			@Override
@@ -280,20 +320,16 @@ public class MainActivity extends AppCompatActivity {
 			public void onFinish() {
 				if (mode == 1) { //まだ質問に入ってなかったら(発表が終わったら)
 					Log.i("デバッグ", "発表時間が終わりました。");
+					if (alermSwitch.isChecked()) {soundPool.play(ptimeEndSound, 1f, 1f, 0, 0, 1.0f);}
 					leftTime = qtime;
 					updateCountDownText();
-					if (alermSwitch.isChecked()) {soundPool.play(ptimeEndSound, 1f, 1f, 0, 0, 1.0f);}
-					rang = false;
-					flashTime = 5000;
-					flash();
 				} else { //質問も終わったら
 					Log.i("デバッグ", "質問時間も終わりました");
 					if (alermSwitch.isChecked()) { soundPool.play(qtimeEndSound, 1f, 1f, 0, 1, 1.0f);}
-					flashTime = 5000;
-					rang = false;
-					flash();
 				}
-
+				rang = false;
+				flashTime = 5000;
+				flash();
 			}
 		}.start();
 	}
@@ -308,7 +344,7 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	private void resetTimer(){  // リセット
-		if (!finished || run) {
+		if (run || paused) {
 			if (mode == 1 || mode == 2){
 				countDown.cancel();
 			}
@@ -375,7 +411,7 @@ public class MainActivity extends AppCompatActivity {
 				flashTime = millisUntilFinished;
 				flashmode = !flashmode;
 				flashparts();
-				Log.i("デバッグ", "点滅させています");
+				//Log.i("デバッグ", "点滅させています");
 			}
 
 			@Override
@@ -433,7 +469,7 @@ public class MainActivity extends AppCompatActivity {
 
 	public void radioSetTimeText10(View v){
 		//timerText.setText("10:00.0");
-		timerText.setText("00:20.0n"); //デモ用
+		timerText.setText("00:20.0"); //デモ用
 	}
 
 	public void radioSetTimeText20(View v){
@@ -448,6 +484,7 @@ public class MainActivity extends AppCompatActivity {
 	// 状態セーブ
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
+		Log.i("デバッグ", "状態保存が呼ばれました: "+ ptime);
 		super.onSaveInstanceState(outState);
 		//boolean系
 		outState.putBoolean("runstatus", run);
@@ -462,19 +499,7 @@ public class MainActivity extends AppCompatActivity {
 		outState.putLong("ptimestatus", ptime);
 		outState.putLong("qtimestatus", qtime);
 		outState.putLong("leftTimestatus", leftTime);
-
-		rotated = true;
-		outState.putBoolean("rotatedstatus", rotated);
-
 		outState.putLong("flashtimestatus", flashTime);
 	}
-
-	@Override
-	protected void onResume() {
-		super.onResume();
-		Log.i("デバッグ", "レジュームしました");
-
-	}
-
 
 }
