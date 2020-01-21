@@ -20,6 +20,10 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import java.text.SimpleDateFormat;
 
 /*
+	これはデモ用のBranchです!!!!!!!!!
+	これはデモ用のBranchです!!!!!!!!!
+	これはデモ用のBranchです!!!!!!!!!
+	
 	発表用タイマー
 	デモ用設定:
 		発表10分→20秒
