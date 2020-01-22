@@ -20,12 +20,9 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import java.text.SimpleDateFormat;
 
 /*
-	発表用タイマー
-	デモ用設定:
-		発表10分→20秒
-		質問5分→15秒
-		1分前アラーム→10秒前アラーム
-
+	システム開発演習B プロジェクト課題
+	発表会支援タイマーアプリ
+	動作確認機種: BlackBerry KEY2, HTL23
  */
 
 public class MainActivity extends AppCompatActivity {
@@ -58,8 +55,6 @@ public class MainActivity extends AppCompatActivity {
 	private int ptimeEndSound;
 	private int qtimeEndSound;
 
-
-	//public long ptime = 20000; //発表時間設定を記録 //ptime = 600000; //一度も動作させたことがないときにActivityが再生成されるとptimeが何もなくて虚無になるので
 	public long ptime; //発表時間設定を記録
 	public long qtime; //質問時間設定を記録
 	private long leftTime; //残り時間を記録
@@ -100,17 +95,12 @@ public class MainActivity extends AppCompatActivity {
 
 		//SoundPool
 		final AudioAttributes audioAttributes = new AudioAttributes.Builder()
-				// USAGE_MEDIA
-				// USAGE_GAME
 				.setUsage(AudioAttributes.USAGE_GAME)
-				// CONTENT_TYPE_MUSIC
-				// CONTENT_TYPE_SPEECH, etc.
 				.setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
 				.build();
 
 		soundPool = new SoundPool.Builder()
 				.setAudioAttributes(audioAttributes)
-				// ストリーム数に応じて
 				.setMaxStreams(3)
 				.build();
 
@@ -313,7 +303,7 @@ public class MainActivity extends AppCompatActivity {
 					}
 				}
 
-				updateCountDownText(); //時間表示更新 (10ms毎にね)
+				updateCountDownText(); //時間表示更新 (10ms毎に)
 			}
 
 			@Override
