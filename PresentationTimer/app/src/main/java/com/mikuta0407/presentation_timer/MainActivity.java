@@ -91,7 +91,7 @@ public class MainActivity extends AppCompatActivity {
 		//テキスト表示
 		timerText = findViewById(R.id.disp_time);
 		//timerText.setText("10:00.0");
-		timerText.setText("00:20.0"); //デモ用
+		timerText.setText("00:15.0"); //デモ用
 		pastText = findViewById(R.id.past_time);
 		pastText.setText(dataFormat.format(0));
 
@@ -186,9 +186,9 @@ public class MainActivity extends AppCompatActivity {
 
 					//停止時の文字復元
 					//if (ptime == 600000) {
-					if (ptime == 20000) { //デモ用
+					if (ptime == 15000) { //デモ用
 						//timerText.setText("10:00.0");
-						timerText.setText("00:20.0"); //デモ用
+						timerText.setText("00:15.0"); //デモ用
 					} else if (ptime == 1200000) {
 						timerText.setText("20:00.0");
 					} else if (ptime == 1800000) {
@@ -201,7 +201,7 @@ public class MainActivity extends AppCompatActivity {
 			/* ラジオボタン */
 			// 発表時間
 			//if (ptime == 600000) {
-			if (ptime == 20000) { //デモ用
+			if (ptime == 15000) { //デモ用
 				ptime_radiobox.check(R.id.ptime10);
 			} else if (ptime == 1200000) {
 				ptime_radiobox.check(R.id.ptime20);
@@ -210,7 +210,7 @@ public class MainActivity extends AppCompatActivity {
 			}
 			// 質問時間
 			//if (qtime == 300000) {動いてくれてるんですよね
-			if (qtime == 15000) { //デモ用
+			if (qtime == 10000) { //デモ用
 				qtime_radiobox.check(R.id.qtime5);
 			} else if (qtime == 600000) {
 				qtime_radiobox.check(R.id.qtime10);
@@ -245,7 +245,7 @@ public class MainActivity extends AppCompatActivity {
 						// ptimeに時間設定。(ms)
 						if (ptimeId == R.id.ptime10) {
 							//ptime = 600000;  //10*60*1000 ms
-							ptime = 20000; //デモ用
+							ptime = 15000; //デモ用
 						} else if (ptimeId == R.id.ptime20) {
 							ptime = 1200000; //20*60*1000 ms
 						} else if (ptimeId == R.id.ptime30) {
@@ -259,7 +259,7 @@ public class MainActivity extends AppCompatActivity {
 						// qtimeに時間設定。(ms)
 						if (qtimeId == R.id.qtime5) {
 							//qtime = 300000;  //5*60*1000 ms
-							qtime = 15000; //デモ用
+							qtime = 10000; //デモ用
 						} else if (qtimeId == R.id.qtime10) {
 							qtime = 600000;  //10*60*1000 ms
 						}
@@ -309,7 +309,7 @@ public class MainActivity extends AppCompatActivity {
 			public void onTick(long millisUntilFinished) {
 				leftTime = millisUntilFinished;
 				//if (leftTime <= 60000 && rang == false){
-				if (leftTime <= 10000 && rang == false){ //デモ用
+				if (leftTime <= 5000 && rang == false){ //デモ用
 					rang = true; //音がなったか鳴らないかにかかわらずとりあえず鳴るタイミングになったので(複数回鳴ることを防止)
 
 					if (alermSwitch.isChecked()) { //アラーム音スイッチがONなら
@@ -467,7 +467,14 @@ public class MainActivity extends AppCompatActivity {
 		if (flashmode == true) {
 			timerText.setText("00:00.0");   //残り0だからね。
 			//pastText.setText((((qtime)/1000)/60) + ":00.0");  //本来はこれやりますがデモは1分未満なので
-			pastText.setText("00.20.0");//デモ用
+pastText.setText("00.20.0");//デモ用
+			/*デモ用*/
+			if (mode == 3){
+				pastText.setText("00.15.0");//デモ用
+			} else if (mode == 4) {
+				pastText.setText("00.10.0");//デモ用
+			}
+
 			timeProgressBar.setProgress(0); //円が全部青か赤に
 		} else {
 			timerText.setText("");  //文字が虚無です
@@ -504,7 +511,7 @@ public class MainActivity extends AppCompatActivity {
 	/* 以下3つは発表時間をラジオボタンで切り替えてるときに表示部も変えるため */
 	public void radioSetTimeText10(View v){
 		//timerText.setText("10:00.0");
-		timerText.setText("00:20.0"); //デモ用
+		timerText.setText("00:15.0"); //デモ用
 	}
 
 	public void radioSetTimeText20(View v){
